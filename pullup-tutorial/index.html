@@ -1,0 +1,525 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pull-Up Tutorial</title>
+<style>
+  :root{
+    --bg1:#0b1020; --bg2:#1a2340;
+    --ink:#f4f6fb; --muted:#aab3c8;
+    --accent:#ff7a1a; --good:#22c55e; --bad:#ef4444; --panel:rgba(10,14,26,.78);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%;overflow:hidden;background:var(--bg1);color:var(--ink);
+    font-family:"Inter","Segoe UI","Helvetica Neue",Arial,"DejaVu Sans",sans-serif}
+  #stage{position:fixed;inset:0;background:radial-gradient(ellipse at 65% 35%,var(--bg2),var(--bg1) 70%)}
+  canvas{display:block}
+  #ui{position:absolute;inset:0;pointer-events:none;font-size:min(1.5vw,2.67vh)}
+  svg#lines{position:absolute;inset:0;width:100%;height:100%}
+  .callout{position:absolute;white-space:nowrap;background:rgba(10,14,26,.88);border-left:.25em solid var(--accent);
+    padding:.35em .7em;border-radius:.35em;font-weight:700;font-size:1.05em;transform:translate(-50%,-50%);
+    box-shadow:0 .3em 1em rgba(0,0,0,.35)}
+  .callout.good{border-color:var(--good)} .callout.bad{border-color:var(--bad)}
+  #panel{position:absolute;left:4.5%;top:12%;width:38%}
+  #badge{display:inline-block;background:var(--accent);color:#111;font-weight:900;letter-spacing:.12em;
+    padding:.3em .8em;border-radius:.3em;font-size:.95em}
+  #badge.bad{background:var(--bad);color:#fff}
+  #title{text-shadow:0 .08em .5em rgba(0,0,0,.6);font-size:2.9em;font-weight:900;line-height:1.05;margin:.35em 0 .5em;letter-spacing:-.01em}
+  #bullets{list-style:none;padding:0;margin:0}
+  #bullets li{display:flex;gap:.7em;align-items:flex-start;font-size:1.3em;line-height:1.3;margin:.0 0 .7em;
+    background:var(--panel);padding:.6em .8em;border-radius:.5em}
+  #bullets li .n{flex:none;width:1.6em;height:1.6em;border-radius:50%;background:var(--accent);color:#111;
+    font-weight:900;display:grid;place-items:center;font-size:.8em;margin-top:.1em}
+  #bullets li.good .n{background:var(--good)} #bullets li.bad .n{background:var(--bad);color:#fff}
+  #intro{position:absolute;left:5%;top:30%;width:50%}
+  #intro .k{color:var(--accent);font-weight:900;letter-spacing:.3em;font-size:1.1em}
+  #intro h1{font-size:5.2em;line-height:.95;margin:.25em 0;font-weight:900;letter-spacing:-.02em}
+  #intro p{font-size:1.5em;color:var(--muted);margin:0}
+  #counter{position:absolute;right:5%;bottom:12%;text-align:center;background:var(--panel);padding:.5em 1.1em;border-radius:.6em}
+  #counter .big{font-size:5.5em;font-weight:900;line-height:1;color:var(--accent)}
+  #counter .small{font-size:1.2em;font-weight:800;letter-spacing:.15em;color:var(--muted)}
+  #verdict{position:absolute;right:5%;bottom:12%;display:flex;align-items:center;gap:.5em;font-weight:900;
+    font-size:2.2em;padding:.25em .7em;border-radius:.4em;color:#fff}
+  #verdict svg{width:1em;height:1em}
+  #progress{position:absolute;left:4.5%;right:4.5%;bottom:4%;height:.35em;background:rgba(255,255,255,.12);border-radius:1em}
+  #progress i{position:absolute;left:0;top:0;bottom:0;background:var(--accent);border-radius:1em}
+  #chapters{position:absolute;left:4.5%;right:4.5%;bottom:5.6%;height:1.2em;font-size:.75em;font-weight:800;
+    letter-spacing:.08em;color:var(--muted)}
+  #chapters span{position:absolute;transform:translateX(0);white-space:nowrap}
+  #chapters span.on{color:var(--ink)}
+  #controls{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);pointer-events:auto;display:flex;gap:.6em;
+    align-items:center;background:var(--panel);padding:.4em .7em;border-radius:2em;font-size:min(1.5vw,2.67vh)}
+  #controls button{background:var(--accent);border:0;color:#111;font-weight:900;border-radius:2em;padding:.35em 1em;
+    font-size:1em;cursor:pointer}
+  #controls input{width:22em}
+  body.rec #controls{display:none}
+  @media (max-width:700px){
+    #ui{font-size:2.6vw} #panel{width:60%;top:6%} #title{font-size:2.2em} #intro{width:80%;top:10%}
+    #controls input{width:40vw}
+  }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="ui">
+  <svg id="lines"></svg>
+  <div id="intro">
+    <div class="k">COACHING GUIDE</div>
+    <h1>How to do<br>a pull-up</h1>
+    <p>Step-by-step technique, common mistakes and how to build up to your first rep.</p>
+  </div>
+  <div id="panel"><span id="badge"></span><div id="title"></div><ul id="bullets"></ul></div>
+  <div id="counter"><div class="big"></div><div class="small"></div></div>
+  <div id="verdict"></div>
+  <div id="callouts"></div>
+  <div id="chapters"></div>
+  <div id="progress"><i></i></div>
+  <div id="controls"><button id="play">Pause</button><input id="scrub" type="range" min="0" max="1000" value="0"></div>
+</div>
+<script src="three.min.js"></script>
+<script>
+(() => {
+const REC = /record/.test(location.search);
+if (REC) document.body.classList.add('rec');
+const V = (x,y,z) => new THREE.Vector3(x,y,z);
+const clamp = (x,a=0,b=1) => Math.min(b,Math.max(a,x));
+const lerp = (a,b,t) => a+(b-a)*t;
+const ss = (a,b,x) => { const t = clamp((x-a)/(b-a)); return t*t*(3-2*t); };
+const ease = t => { t = clamp(t); return t<.5 ? 4*t*t*t : 1-Math.pow(-2*t+2,3)/2; };
+
+/* ---------------- timeline ---------------- */
+const SCENES = [
+ {id:'intro', t0:0,  t1:4.5},
+ {id:'grip',  t0:4.5,t1:10.5, badge:'STEP 1 OF 4', title:'Grip the bar',
+   bullets:['Palms facing away from you (overhand)','Hands slightly wider than your shoulders','Wrap your thumbs around the bar']},
+ {id:'hang',  t0:10.5,t1:16.5, badge:'STEP 2 OF 4', title:'Start from a dead hang',
+   bullets:['Arms fully straight','Pull your shoulders down, away from your ears','Squeeze glutes, brace core, legs together']},
+ {id:'pull',  t0:16.5,t1:23.5, badge:'STEP 3 OF 4', title:'Pull yourself up',
+   bullets:['Drive your elbows down toward your ribs','Lead with your chest','Pull until your chin clears the bar']},
+ {id:'lower', t0:23.5,t1:29.5, badge:'STEP 4 OF 4', title:'Lower with control',
+   bullets:['Take 2–3 seconds on the way down','Finish with arms fully straight','No dropping, no bouncing']},
+ {id:'reps',  t0:29.5,t1:41.5, badge:'PUT IT TOGETHER', title:'Smooth, controlled reps',
+   bullets:['Up: about 1 second','Down: 2–3 seconds','Breathe out going up, in going down']},
+ {id:'m1',    t0:41.5,t1:46.5, badge:'MISTAKE 1', title:'Swinging & kicking', wrong:'Using momentum', fix:'Keep the body still — brace your core'},
+ {id:'m2',    t0:46.5,t1:51.5, badge:'MISTAKE 2', title:'Half reps', wrong:'Not going all the way down', fix:'Lower to fully straight arms every rep'},
+ {id:'m3',    t0:51.5,t1:56.5, badge:'MISTAKE 3', title:'Shrugging the shoulders', wrong:'Shoulders up by the ears', fix:'Keep shoulders down and back'},
+ {id:'prog',  t0:56.5,t1:64,   badge:"CAN'T DO ONE YET?", title:'Build up to it',
+   bullets:['Dead hangs — 3 × 20–30 seconds','Scapular pulls — 3 × 8','Negatives — jump up, lower in 5 seconds','Band-assisted pull-ups — 3 × 5–8']},
+ {id:'outro', t0:64, t1:69},
+];
+const TOTAL = 69;
+const CHAPTERS = [['GRIP',4.5],['HANG',10.5],['PULL',16.5],['LOWER',23.5],['REPS',29.5],['MISTAKES',41.5],['BUILD UP',56.5]];
+const sceneAt = t => SCENES.find(s => t >= s.t0 && t < s.t1) || SCENES[SCENES.length-1];
+
+// one rep shape: 0 -> 1 -> 0
+function rep(lt, up, hold, down) {
+  if (lt < 0) return 0;
+  if (lt < up) return ease(lt/up);
+  if (lt < up+hold) return 1;
+  if (lt < up+hold+down) return 1-ease((lt-up-hold)/down);
+  return 0;
+}
+
+/* body state at time t */
+function stateAt(t) {
+  const s = {h:0, shrug:0, swing:0, knee:.35, hipFlex:.12, glow:0, tint:0};
+  const sc = sceneAt(t), lt = t - sc.t0;
+  switch (sc.id) {
+    case 'intro': s.h = rep(lt-1.0, 1.1, .4, 1.8); break;
+    case 'grip': s.h = 0; break;
+    case 'hang': s.shrug = 1 - ss(1.2, 2.3, lt); break;
+    case 'pull': s.h = ease((lt-.6)/2.2); break;
+    case 'lower': s.h = 1 - ease((lt-.8)/3.0); break;
+    case 'reps': { const p = lt % 4; s.h = rep(p-.2, 1.0, .3, 2.4); break; }
+    case 'm1': {
+      if (lt < 3.1) {
+        const ph = lt*2*Math.PI/1.4;
+        s.swing = .32*Math.sin(ph) * ss(0,.4,lt);
+        s.knee = .35 + .55*(.5+.5*Math.sin(ph+1.2));
+        s.hipFlex = .12 + .55*(.5+.5*Math.sin(ph+.6));
+        s.h = .5 - .5*Math.cos(ph+.3);
+        s.tint = -1;
+        const k = ss(2.6,3.1,lt); s.swing*=1-k; s.h*=1-k; s.knee=lerp(s.knee,.35,k); s.hipFlex=lerp(s.hipFlex,.12,k);
+      } else { s.h = rep(lt-3.2, .8, .2, 1.0); s.tint = 1; }
+      break;
+    }
+    case 'm2': {
+      if (lt < 3.0) { const ph = (lt)*2*Math.PI/1.25; s.h = lerp(.5,1,.5-.5*Math.cos(ph)); s.h = lerp(0,s.h,ss(0,.4,lt)); s.tint=-1;
+        s.h = lerp(s.h, .5, ss(2.7,3.0,lt)); }
+      else { s.h = .5*(1-ease((lt-3.0)/.9)); s.tint = 1; }
+      break;
+    }
+    case 'm3': {
+      if (lt < 3.0) { s.shrug = ss(0,.4,lt)*(1-ss(2.7,3.0,lt)); s.h = .55*rep(lt-.4, 1.0, .3, 1.0); s.tint=-1; }
+      else { s.shrug = 0; s.h = rep(lt-3.2, .8, .2, 1.0); s.tint = 1; }
+      break;
+    }
+    case 'prog': { s.h = lt < .6 ? 0 : (lt < 1.0 ? ease((lt-.6)/.4) : (lt < 1.4 ? 1 : 1 - ss(1.4,6.4,lt))); break; }
+    case 'outro': s.h = rep(lt-.6, 1.0, .3, 2.0); break;
+  }
+  s.glow = sc.id === 'm3' ? s.h*.5 : s.h;
+  return s;
+}
+
+/* camera per scene: [azimuthDeg, elevationDeg, distance, targetY, screenShift] */
+function camScene(sc, lt) {
+  switch (sc.id) {
+    case 'intro': return [35 - lt*4, 12, 4.9, 1.5, -1.0];
+    case 'grip':  return [20, 10, 2.3, 2.05, -0.6];
+    case 'hang':  return [28 - lt*1.5, 6, 3.9, 1.45, -0.85];
+    case 'pull':  return [52, 8, 3.7, 1.65, -0.8];
+    case 'lower': return [-38, 6, 3.7, 1.6, -0.8];
+    case 'reps':  return [-38 + 360*ease(lt/12), 10, 4.0, 1.55, -0.85];
+    case 'm1':    return [68, 6, 4.6, 1.45, -0.9];
+    case 'm2':    return [38, 6, 3.9, 1.6, -0.8];
+    case 'm3':    return [12, 4, 2.3, 2.0, -0.5];
+    case 'prog':  return [58 + lt*2, 8, 4.1, 1.3, -0.85];
+    case 'outro': return [30 + lt*6, 14, 5.2, 1.5, -1.0];
+  }
+}
+function camAt(t) {
+  const i = SCENES.indexOf(sceneAt(t)), sc = SCENES[i], lt = t - sc.t0;
+  let c = camScene(sc, lt);
+  if (i > 0) {
+    const p = SCENES[i-1], pc = camScene(p, p.t1 - p.t0);
+    const k = ease(lt/1.3);
+    c = c.map((v,j) => lerp(pc[j], v, k));
+  }
+  return c;
+}
+
+/* ---------------- three.js scene ---------------- */
+const stage = document.getElementById('stage');
+const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true, preserveDrawingBuffer:true});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputEncoding = THREE.sRGBEncoding;
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0b1020, 9, 18);
+const camera = new THREE.PerspectiveCamera(38, 16/9, .05, 60);
+
+scene.add(new THREE.HemisphereLight(0xbfd4ff, 0x20160f, .65));
+const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(3, 6, 4);
+key.castShadow = true; key.shadow.mapSize.set(1024,1024);
+Object.assign(key.shadow.camera, {left:-3,right:3,top:4,bottom:-1,near:1,far:15});
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xff9a50, .7); rim.position.set(-4, 3, -4); scene.add(rim);
+const fill = new THREE.DirectionalLight(0x7aa2ff, .35); fill.position.set(-3, 1, 4); scene.add(fill);
+
+// floor + mat
+const floor = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.ShadowMaterial({opacity:.5}));
+floor.rotation.x = -Math.PI/2; floor.receiveShadow = true; scene.add(floor);
+const grid = new THREE.GridHelper(14, 28, 0x2c3a60, 0x1d2744); grid.position.y = .002; scene.add(grid);
+const mat = new THREE.Mesh(new THREE.BoxGeometry(1.4,.03,1.0), new THREE.MeshStandardMaterial({color:0x0d1222, roughness:.9}));
+mat.position.y = .015; mat.receiveShadow = true; scene.add(mat);
+
+// pull-up rig
+const BAR_Y = 2.3, BAR_R = .022, POST_X = .95;
+const metal = new THREE.MeshStandardMaterial({color:0xc9ced8, metalness:.85, roughness:.28});
+const frameMat = new THREE.MeshStandardMaterial({color:0x2d3550, metalness:.4, roughness:.5});
+const bar = new THREE.Mesh(new THREE.CylinderGeometry(BAR_R, BAR_R, POST_X*2+.1, 24), metal);
+bar.rotation.z = Math.PI/2; bar.position.set(0, BAR_Y, 0); bar.castShadow = true; scene.add(bar);
+for (const sx of [-1,1]) {
+  const post = new THREE.Mesh(new THREE.BoxGeometry(.08, BAR_Y+.12, .08), frameMat);
+  post.position.set(sx*POST_X, (BAR_Y+.12)/2, 0); post.castShadow = true; scene.add(post);
+  const foot = new THREE.Mesh(new THREE.BoxGeometry(.1, .05, .9), frameMat);
+  foot.position.set(sx*POST_X, .025, 0); scene.add(foot);
+}
+
+// mannequin
+const skin = new THREE.MeshStandardMaterial({color:0xdfe4ec, roughness:.5, metalness:.05});
+const jointM = new THREE.MeshStandardMaterial({color:0x8e9ab0, roughness:.5});
+const shirt = new THREE.MeshStandardMaterial({color:0x3b6fd8, roughness:.6});
+const shorts = new THREE.MeshStandardMaterial({color:0x1f2a44, roughness:.7});
+const latM = new THREE.MeshStandardMaterial({color:0xff7a1a, emissive:0xff5a00, emissiveIntensity:0, roughness:.5, transparent:true, opacity:.95});
+const baseSkin = skin.color.clone(), baseShirt = shirt.color.clone();
+
+const unitCyl = new THREE.CylinderGeometry(1,1,1,20);
+const unitSph = new THREE.SphereGeometry(1, 28, 20);
+function seg(r, m) { const o = new THREE.Mesh(unitCyl, m); o.userData.r = r; o.castShadow = true; scene.add(o); return o; }
+function ball(r, m, parent=scene) { const o = new THREE.Mesh(unitSph, m); o.scale.setScalar(r); o.castShadow = true; parent.add(o); return o; }
+const UP = V(0,1,0);
+function place(o, a, b) {
+  const d = b.clone().sub(a), L = d.length();
+  o.position.copy(a).addScaledVector(d, .5);
+  o.scale.set(o.userData.r, L, o.userData.r);
+  o.quaternion.setFromUnitVectors(UP, d.normalize());
+}
+
+const torso = new THREE.Group(); scene.add(torso);
+const chest = ball(1, shirt, torso); chest.scale.set(.2, .29, .13);
+const girdle = ball(1, shirt, torso); girdle.scale.set(.25, .1, .13); girdle.position.set(0, .2, 0);
+const latL = ball(1, latM, torso); latL.scale.set(.075, .2, .06); latL.position.set(-.135, .04, -.065); latL.rotation.z = -.25;
+const latR = ball(1, latM, torso); latR.scale.set(.075, .2, .06); latR.position.set(.135, .04, -.065); latR.rotation.z = .25;
+const pelvis = ball(1, shorts); pelvis.scale.set(.17, .11, .115);
+const head = new THREE.Group(); scene.add(head);
+const skull = ball(1, skin, head); skull.scale.set(.1, .118, .108);
+const nose = ball(.022, skin, head); nose.position.set(0, -.005, .105);
+const visorM = new THREE.MeshStandardMaterial({color:0x1f2a44, roughness:.4});
+const eyes = new THREE.Mesh(new THREE.BoxGeometry(.13, .028, .04), visorM); eyes.position.set(0, .03, .088); head.add(eyes);
+const neck = seg(.045, skin);
+const parts = {
+  uaL: seg(.052, skin), uaR: seg(.052, skin), faL: seg(.043, skin), faR: seg(.043, skin),
+  thL: seg(.075, shorts), thR: seg(.075, shorts), shL: seg(.055, skin), shR: seg(.055, skin),
+  ftL: seg(.04, jointM), ftR: seg(.04, jointM),
+};
+const jS = [ball(.065, shirt), ball(.065, shirt)], jE = [ball(.048, jointM), ball(.048, jointM)];
+const jK = [ball(.06, jointM), ball(.06, jointM)], jA = [ball(.045, jointM), ball(.045, jointM)];
+const jH = [ball(.075, shorts), ball(.075, shorts)];
+// hands: palm + fingers wrapped over the bar (overhand)
+const hands = [0,1].map(() => {
+  const g = new THREE.Group(); scene.add(g);
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(.085, .09, .035), skin); palm.position.set(0, -.035, -.035); palm.castShadow = true; g.add(palm);
+  const fingers = new THREE.Mesh(new THREE.TorusGeometry(BAR_R+.017, .017, 10, 24, Math.PI*1.35), skin);
+  fingers.rotation.y = Math.PI/2; fingers.rotation.x = -Math.PI*.15; fingers.scale.z = 2.4; g.add(fingers);
+  const thumb = new THREE.Mesh(new THREE.TorusGeometry(BAR_R+.014, .013, 8, 16, Math.PI*.9), skin);
+  thumb.rotation.y = Math.PI/2; thumb.rotation.x = Math.PI*.95; g.add(thumb);
+  return g;
+});
+
+// arrows
+function makeArrow(color) {
+  const g = new THREE.Group(), m = new THREE.MeshBasicMaterial({color, transparent:true, depthTest:false});
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.018,.018,.7,12), m); shaft.position.y = .35;
+  const tip = new THREE.Mesh(new THREE.ConeGeometry(.055,.3,16), m); tip.position.y = .85;
+  g.add(shaft, tip); g.renderOrder = 10; shaft.renderOrder = tip.renderOrder = 10; g.userData.m = m; scene.add(g); return g;
+}
+const arrows = [makeArrow(0xff7a1a), makeArrow(0xff7a1a), makeArrow(0x22c55e)];
+function setArrow(a, from, dir, len, alpha) {
+  a.visible = alpha > .01; a.userData.m.opacity = alpha;
+  a.position.copy(from); a.scale.setScalar(len); a.quaternion.setFromUnitVectors(UP, dir.clone().normalize());
+}
+// width guides
+function guide(color) {
+  const geo = new THREE.BufferGeometry().setFromPoints([V(0,0,0),V(1,0,0)]);
+  const l = new THREE.Line(geo, new THREE.LineDashedMaterial({color, dashSize:.04, gapSize:.025, transparent:true, depthTest:false}));
+  l.renderOrder = 11; scene.add(l); return l;
+}
+const gHands = guide(0xff7a1a), gShoulders = guide(0xffffff);
+function setGuide(l, a, b, alpha) {
+  l.visible = alpha > .01; l.material.opacity = alpha;
+  l.geometry.setFromPoints([a,b]); l.computeLineDistances();
+}
+
+/* ---------------- pose ---------------- */
+const L1 = .30, L2 = .28, HAND_X = .43, WRIST_Y = BAR_Y - .065;
+function ik(S, W, sign) {
+  const d = W.clone().sub(S); let dist = d.length(); const dir = d.clone().normalize();
+  dist = clamp(dist, Math.abs(L1-L2)+1e-3, L1+L2-1e-4);
+  const a = (L1*L1 - L2*L2 + dist*dist)/(2*dist), hgt = Math.sqrt(Math.max(0, L1*L1-a*a));
+  const pole = V(sign, -.25, .35).normalize();
+  const perp = pole.sub(dir.clone().multiplyScalar(pole.dot(dir))).normalize();
+  return S.clone().addScaledVector(dir, a).addScaledVector(perp, hgt);
+}
+function pose(s) {
+  const sy = lerp(1.72, 2.2, s.h), bz = lerp(-.02, -.13, s.h), drop = s.shrug*.08;
+  const P = {};
+  P.SC = V(0, sy, bz);
+  P.LS = V(-.19, sy, bz); P.RS = V(.19, sy, bz);
+  P.TT = V(0, sy - drop - .02, bz);
+  P.HC = V(0, sy - .53 - drop, bz + .06*s.h);
+  P.NB = V(0, sy - drop + .03, bz);
+  P.HD = V(0, sy - drop + .235, bz + .015);
+  for (const [k, sx] of [['L',-1],['R',1]]) {
+    const hip = V(sx*.095, P.HC.y - .03, P.HC.z);
+    const a = s.hipFlex, b = s.hipFlex - s.knee;
+    const knee = hip.clone().add(V(0, -Math.cos(a), Math.sin(a)).multiplyScalar(.43));
+    const ank = knee.clone().add(V(0, -Math.cos(b), Math.sin(b)).multiplyScalar(.42));
+    const toe = ank.clone().add(V(0, -Math.cos(b+1.9), Math.sin(b+1.9)).multiplyScalar(.13));
+    P['Hp'+k] = hip; P['K'+k] = knee; P['A'+k] = ank; P['T'+k] = toe;
+  }
+  // swing around the bar
+  if (s.swing) {
+    const q = new THREE.Quaternion().setFromAxisAngle(V(1,0,0), s.swing), piv = V(0, BAR_Y, 0);
+    for (const k in P) P[k].sub(piv).applyQuaternion(q).add(piv);
+  }
+  P.WL = V(-HAND_X, WRIST_Y, -.012); P.WR = V(HAND_X, WRIST_Y, -.012);
+  P.EL = ik(P.LS, P.WL, -1); P.ER = ik(P.RS, P.WR, 1);
+  return P;
+}
+
+function applyPose(P, s) {
+  place(parts.uaL, P.LS, P.EL); place(parts.uaR, P.RS, P.ER);
+  place(parts.faL, P.EL, P.WL); place(parts.faR, P.ER, P.WR);
+  place(parts.thL, P.HpL, P.KL); place(parts.thR, P.HpR, P.KR);
+  place(parts.shL, P.KL, P.AL); place(parts.shR, P.KR, P.AR);
+  place(parts.ftL, P.AL, P.TL); place(parts.ftR, P.AR, P.TR);
+  place(neck, P.NB, P.HD);
+  jS[0].position.copy(P.LS); jS[1].position.copy(P.RS);
+  jE[0].position.copy(P.EL); jE[1].position.copy(P.ER);
+  jK[0].position.copy(P.KL); jK[1].position.copy(P.KR);
+  jA[0].position.copy(P.AL); jA[1].position.copy(P.AR);
+  jH[0].position.copy(P.HpL); jH[1].position.copy(P.HpR);
+  // torso frame
+  const axis = P.TT.clone().sub(P.HC).normalize();
+  torso.position.copy(P.TT).add(P.HC).multiplyScalar(.5).addScaledVector(axis, .04);
+  torso.quaternion.setFromUnitVectors(UP, axis);
+  pelvis.position.copy(P.HC); pelvis.quaternion.copy(torso.quaternion);
+  head.position.copy(P.HD); head.quaternion.copy(torso.quaternion);
+  hands[0].position.set(-HAND_X, BAR_Y, 0); hands[1].position.set(HAND_X, BAR_Y, 0);
+  latM.emissiveIntensity = s.glow*1.4; latM.opacity = .35 + .6*s.glow;
+  latM.color.setHSL(.07, 1, .35 + .2*s.glow);
+  const tc = s.tint < 0 ? new THREE.Color(0xff6b6b) : new THREE.Color(0x6ee7a0);
+  const ta = Math.abs(s.tint) * .35;
+  skin.color.copy(baseSkin).lerp(tc, ta); shirt.color.copy(baseShirt).lerp(tc, ta*.8);
+}
+
+/* ---------------- overlay ---------------- */
+const $ = id => document.getElementById(id);
+const ui = $('ui'), svg = $('lines'), callBox = $('callouts');
+const chapEl = $('chapters');
+CHAPTERS.forEach(([n,t]) => { const s = document.createElement('span'); s.textContent = n; s.style.left = (t/TOTAL*100)+'%'; chapEl.appendChild(s); });
+let curScene = null;
+function buildPanel(sc) {
+  $('badge').textContent = sc.badge || '';
+  $('badge').className = sc.wrong ? 'bad' : '';
+  $('title').textContent = sc.title || '';
+  const ul = $('bullets'); ul.innerHTML = '';
+  const items = sc.bullets ? sc.bullets.map((b,i) => [String(i+1), b, ''])
+              : sc.wrong ? [['✕', sc.wrong, 'bad'], ['✓', sc.fix, 'good']] : [];
+  for (const [n, txt, cls] of items) {
+    const li = document.createElement('li'); li.className = cls;
+    li.innerHTML = `<span class="n">${n}</span><span>${txt}</span>`; ul.appendChild(li);
+  }
+}
+const XICON = '<svg viewBox="0 0 24 24"><path d="M5 5l14 14M19 5L5 19" stroke="#fff" stroke-width="4" stroke-linecap="round"/></svg>';
+const CICON = '<svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// callouts: [sceneId, from, to, anchorFn, text, dx, dy, cls]
+const mid = (a,b) => a.clone().add(b).multiplyScalar(.5);
+const CALLOUTS = [
+  ['grip', .8, 6, P => V(HAND_X, BAR_Y+.01, .03), 'Overhand grip: palms away', 60, -110, ''],
+  ['grip', 2.0, 6, P => V(-HAND_X+.05, BAR_Y+.12, 0), 'Hands wider than shoulders', 40, -150, ''],
+  ['grip', 3.2, 6, P => V(HAND_X, BAR_Y-.03, -.03), 'Thumb wraps the bar', 40, 120, 'good'],
+  ['hang', .6, 6, P => mid(P.ER, P.WR), 'Arms straight', 160, -30, ''],
+  ['hang', 1.4, 6, P => P.RS, 'Shoulders DOWN, not shrugged', 190, 60, 'good'],
+  ['hang', 2.8, 6, P => P.HC, 'Core tight, legs together', 180, 60, ''],
+  ['pull', .8, 7, P => P.ER, 'Drive elbows down', 170, -20, ''],
+  ['pull', 1.6, 7, P => P.TT.clone().add(V(0,-.1,.12)), 'Back (lats) does the work', 170, 120, ''],
+  ['pull', 2.6, 7, P => P.HD.clone().add(V(0,-.08,.1)), 'Chin over the bar', 160, -70, 'good'],
+  ['lower', .8, 4, P => P.ER, 'Slow and controlled', 160, 20, ''],
+  ['lower', 4, 6, P => mid(P.RS, P.ER), 'Full extension', 160, 0, 'good'],
+  ['m1', 0, 3.0, P => P.KR, 'No kicking', 150, 30, 'bad'],
+  ['m2', .4, 3.0, P => P.ER, 'Stops halfway', 150, 30, 'bad'],
+  ['m2', 3.6, 5, P => mid(P.RS, P.ER), 'All the way down', 160, 10, 'good'],
+  ['m3', .5, 3.0, P => P.RS, 'Ears touching shoulders', 160, -40, 'bad'],
+  ['m3', 3.3, 5, P => P.RS, 'Shoulders packed down', 160, -40, 'good'],
+];
+const calloutEls = CALLOUTS.map(c => { const d = document.createElement('div'); d.className = 'callout '+c[7]; d.textContent = c[4]; callBox.appendChild(d); return d; });
+
+function project(v, w, h) { const p = v.clone().project(camera); return [(p.x*.5+.5)*w, (-p.y*.5+.5)*h]; }
+
+function updateUI(t, P, s) {
+  const sc = sceneAt(t), lt = t - sc.t0, dur = sc.t1 - sc.t0;
+  const W = ui.clientWidth, H = ui.clientHeight, u = Math.min(W/1280, H/720);
+  const fade = ss(0,.5,lt) * (1 - ss(dur-.45, dur, lt));
+  if (sc !== curScene) { curScene = sc; buildPanel(sc); }
+  // intro / outro
+  const intro = $('intro');
+  if (sc.id === 'intro') { intro.style.display = ''; intro.style.opacity = ss(.2,.9,lt)*(1-ss(4.0,4.5,lt));
+    intro.querySelector('.k').textContent = 'COACHING GUIDE'; intro.querySelector('h1').innerHTML = 'How to do<br>a pull-up';
+    intro.querySelector('p').textContent = 'Step-by-step technique, common mistakes and how to build up to your first rep.'; }
+  else if (sc.id === 'outro') { intro.style.display = ''; intro.style.opacity = ss(.2,.9,lt);
+    intro.querySelector('.k').textContent = 'RECAP';
+    intro.querySelector('h1').innerHTML = 'Grip · Hang<br>Pull · Lower';
+    intro.querySelector('p').textContent = 'Quality over quantity: stop each set when your form breaks down. Train 2–3 times a week.'; }
+  else intro.style.display = 'none';
+  // panel
+  const panel = $('panel');
+  panel.style.display = (sc.badge ? '' : 'none'); panel.style.opacity = fade;
+  [...$('bullets').children].forEach((li, i) => {
+    let a;
+    if (sc.wrong) a = i === 0 ? ss(.3,.8,lt) : ss(3.0,3.4,lt);
+    else a = ss(.6 + i*.7, 1.1 + i*.7, lt);
+    li.style.opacity = a; li.style.transform = `translateX(${(1-a)*-1.5}em)`;
+  });
+  // counter
+  const cnt = $('counter'), big = cnt.querySelector('.big'), small = cnt.querySelector('.small');
+  let cShow = 0;
+  if (sc.id === 'lower' && lt > .8 && lt < 4.4) { cShow = 1; big.textContent = Math.min(3, Math.floor(lt-.8)+1); small.textContent = 'SECONDS DOWN'; }
+  if (sc.id === 'reps') { cShow = 1; const r = Math.min(3, Math.floor(lt/4)+1), p = lt % 4;
+    big.textContent = r + '/3'; small.textContent = (p < 1.2 ? 'UP — 1 SEC' : p < 1.5 ? 'HOLD' : p < 3.9 ? 'DOWN — 2-3 SEC' : 'HANG'); }
+  if (sc.id === 'prog' && lt > 1.4 && lt < 6.4) { cShow = 1; big.textContent = Math.max(1, 5 - Math.floor(lt-1.4)); small.textContent = 'NEGATIVE — LOWER SLOWLY'; }
+  cnt.style.opacity = cShow * fade; cnt.style.display = cShow ? '' : 'none';
+  // verdict
+  const vd = $('verdict');
+  if (sc.wrong) { const wrong = lt < 3.0; vd.style.display = '';
+    vd.style.background = wrong ? 'var(--bad)' : 'var(--good)';
+    vd.innerHTML = (wrong ? XICON + 'WRONG' : CICON + 'RIGHT');
+    vd.style.opacity = fade * (wrong ? ss(.2,.5,lt)*(1-ss(2.8,3.0,lt)) : ss(3.0,3.3,lt));
+  } else vd.style.display = 'none';
+  // callouts
+  let svgHtml = '';
+  CALLOUTS.forEach((c, i) => {
+    const el = calloutEls[i];
+    if (c[0] !== sc.id) { el.style.display = 'none'; return; }
+    const a = ss(c[1], c[1]+.35, lt) * (1 - ss(c[2]-.3, c[2], lt)) * fade;
+    if (a < .01) { el.style.display = 'none'; return; }
+    const [x, y] = project(c[3](P), W, H);
+    el.style.display = '';
+    const hw = el.offsetWidth/2;
+    const lx = clamp(x + c[5]*u, W*.45 + hw, W - hw - 14*u), ly = y + c[6]*u; el.style.opacity = a; el.style.left = lx+'px'; el.style.top = ly+'px';
+    const col = c[7] === 'good' ? '#22c55e' : c[7] === 'bad' ? '#ef4444' : '#ff7a1a';
+    svgHtml += `<g opacity="${a}"><line x1="${x}" y1="${y}" x2="${lx}" y2="${ly}" stroke="${col}" stroke-width="${2.5*u}"/>`+
+      `<circle cx="${x}" cy="${y}" r="${7*u}" fill="${col}" stroke="#fff" stroke-width="${2*u}"/></g>`;
+  });
+  svg.innerHTML = svgHtml;
+  // progress
+  $('progress').firstElementChild.style.width = (t/TOTAL*100)+'%';
+  [...chapEl.children].forEach((s, i) => { const on = t >= CHAPTERS[i][1] && (i === CHAPTERS.length-1 || t < CHAPTERS[i+1][1]); s.className = on ? 'on' : ''; });
+}
+
+/* ---------------- render ---------------- */
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  renderer.setSize(w, h); camera.aspect = w/h; camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', resize); resize();
+
+function renderAt(t) {
+  t = clamp(t, 0, TOTAL - 1e-3);
+  const s = stateAt(t), P = pose(s);
+  applyPose(P, s);
+  // camera
+  const [az, el, dist, ty, shift] = camAt(t);
+  const A = az*Math.PI/180, E = el*Math.PI/180;
+  const narrow = camera.aspect < 1.2 ? 1.6 : 1;
+  const tgt = V(0, ty, -.05);
+  const pos = V(Math.sin(A)*Math.cos(E), Math.sin(E), Math.cos(A)*Math.cos(E)).multiplyScalar(dist*narrow).add(tgt);
+  const right = V(Math.cos(A), 0, -Math.sin(A));
+  const sh = camera.aspect < 1.2 ? 0 : shift*dist/4.2;
+  tgt.addScaledVector(right, sh); pos.addScaledVector(right, sh);
+  camera.position.copy(pos); camera.lookAt(tgt);
+  camera.updateMatrixWorld();
+  // arrows & guides
+  const sc = sceneAt(t), lt = t - sc.t0;
+  const pullA = sc.id === 'pull' ? ss(.4,.8,lt)*(1-ss(2.7,3.1,lt)) : 0;
+  const downA = sc.id === 'lower' ? ss(.6,1.0,lt)*(1-ss(3.6,4.0,lt)) : 0;
+  setArrow(arrows[0], P.EL.clone().add(V(-.04,-.06,0)), V(0,-1,0), .3, pullA);
+  setArrow(arrows[1], P.ER.clone().add(V(.04,-.06,0)), V(0,-1,0), .3, pullA);
+  setArrow(arrows[2], downA ? P.TT.clone().add(V(0,.0,.28)) : P.TT.clone().add(V(0,-.25,.25)), downA ? V(0,-1,0) : V(0,1,0), .3, Math.max(pullA, downA));
+  arrows[2].userData.m.color.set(downA ? 0x22c55e : 0xff7a1a);
+  const gA = sc.id === 'grip' ? ss(1.8,2.3,lt)*(1-ss(5.6,6,lt)) : 0;
+  setGuide(gHands, V(-HAND_X, BAR_Y+.12, 0), V(HAND_X, BAR_Y+.12, 0), gA);
+  setGuide(gShoulders, P.LS.clone().add(V(0,0,.09)), P.RS.clone().add(V(0,0,.09)), gA);
+  renderer.render(scene, camera);
+  updateUI(t, P, s);
+}
+window.renderAt = renderAt; window.TOTAL = TOTAL;
+
+if (!REC) {
+  let t0 = performance.now(), playing = true, tt = 0;
+  const btn = $('play'), scrub = $('scrub');
+  btn.onclick = () => { playing = !playing; btn.textContent = playing ? 'Pause' : 'Play'; t0 = performance.now() - tt*1000; };
+  scrub.oninput = () => { tt = scrub.value/1000*TOTAL; t0 = performance.now() - tt*1000; renderAt(tt); };
+  (function loop() {
+    if (playing) { tt = ((performance.now() - t0)/1000) % TOTAL; scrub.value = tt/TOTAL*1000; renderAt(tt); }
+    requestAnimationFrame(loop);
+  })();
+} else renderAt(0);
+})();
+</script>
+</body>
+</html>
