@@ -1,0 +1,203 @@
+<title>Family BBQ Box</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: one centered column; top-down box diagram first, then contents, packing steps, sizes, label */
+:root{
+  --bg:#f6f3f1; --surface:#ffffff; --fg:#231c1a; --muted:#6d625e; --line:#e2dad6;
+  --accent:#8e2b25; --accent-soft:#f3e3e1;
+  --display:"Oswald","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171312; --surface:#211b1a; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f;
+  --accent:#e0776c; --accent-soft:#3a2321; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171312; --surface:#211b1a; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f;
+  --accent:#e0776c; --accent-soft:#3a2321; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:920px;margin:0 auto;padding-block:40px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:48px}
+h1,h2{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.2rem,6vw,3.4rem);line-height:1.05}
+h2{font-size:1.5rem;margin-bottom:16px}
+.eyebrow{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600}
+.lede{color:var(--muted);max-width:60ch;margin:12px 0 0}
+.facts{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.chip{background:var(--accent-soft);color:var(--accent);font-weight:600;padding:4px 12px;border-radius:999px;font-size:.9rem}
+figure{margin:0;display:flex;flex-direction:column;gap:16px}
+svg.box{width:100%;height:auto;display:block}
+figcaption{color:var(--muted);font-size:.95rem}
+.legend{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px 24px}
+.legend li{display:flex;gap:10px;align-items:baseline}
+.num{flex:none;width:24px;height:24px;border-radius:50%;background:var(--fg);color:var(--bg);font-weight:600;font-size:.8rem;display:inline-grid;place-items:center;transform:translateY(5px)}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums;min-width:520px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right}
+tfoot td{font-weight:600;border-bottom:none}
+ol.steps{margin:0;padding-left:1.4em;display:flex;flex-direction:column;gap:10px;max-width:65ch}
+ol.steps li::marker{font-family:var(--display);color:var(--accent);font-weight:600}
+.sizes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.size{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:8px}
+.size h3{font-family:var(--display);font-weight:500;text-transform:uppercase;font-size:1.2rem;margin:0}
+.size .w{font-family:var(--display);font-size:1.9rem;color:var(--accent);line-height:1}
+.size p{margin:0;color:var(--muted);font-size:.95rem}
+.size.star{border-color:var(--accent)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;align-items:start}
+.two > *{min-width:0}
+ul.plain{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.label{background:#fbf7f0;color:#231c1a;border:2px dashed #b9a88e;border-radius:6px;padding:18px;font-size:.92rem;display:flex;flex-direction:column;gap:6px;max-width:360px}
+.label strong{font-family:var(--display);text-transform:uppercase;font-size:1.25rem;letter-spacing:.03em}
+.label .row{display:flex;justify-content:space-between;gap:12px;border-top:1px solid #e3d8c6;padding-top:6px}
+.note{color:var(--muted);font-size:.9rem;max-width:65ch}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Ready to cook · Beef &amp; lamb</div>
+    <h1>Family BBQ Box</h1>
+    <p class="lede">Five kinds of meat in one tray, marinated and ready for the grill. The customer opens the box, fires up the BBQ, and cooks. Nothing to cut or season.</p>
+    <div class="facts"><span class="chip">4–5 people</span><span class="chip">about 2.3 kg of meat</span><span class="chip">24 pieces</span></div>
+  </header>
+
+  <section>
+    <h2>How the box is laid out</h2>
+    <figure>
+      <svg class="box" id="box" viewBox="0 0 800 560" role="img" aria-label="Top view of the BBQ box: beef and lamb skewers on the left half, merguez, kefta skewers and lamb chops on the right half, separated by a line of parsley."></svg>
+      <figcaption>Top view of a 40 × 30 cm black tray. Skewers take the left half, and the right half has three rows. A line of parsley separates the two halves, and lemon wedges sit in the corner.</figcaption>
+      <ol class="legend">
+        <li><span class="num">1</span><span><b>Beef skewers</b>: top left, 4 skewers</span></li>
+        <li><span class="num">2</span><span><b>Lamb skewers</b>: bottom left, 4 skewers</span></li>
+        <li><span class="num">3</span><span><b>Merguez</b>: top right, side by side</span></li>
+        <li><span class="num">4</span><span><b>Kefta skewers</b>: middle right</span></li>
+        <li><span class="num">5</span><span><b>Lamb chops</b>: bottom right, fanned out</span></li>
+      </ol>
+    </figure>
+  </section>
+
+  <section>
+    <h2>What goes in</h2>
+    <div class="tbl"><table>
+      <thead><tr><th>#</th><th>Product</th><th class="r">Pieces</th><th class="r">Weight</th><th>Seasoning</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Beef skewers (cubes, onion, pepper)</td><td class="r">4</td><td class="r">480 g</td><td>Garlic, paprika, cumin, oil</td></tr>
+        <tr><td>2</td><td>Lamb skewers (cubes, onion)</td><td class="r">4</td><td class="r">480 g</td><td>Cumin, coriander, onion, oil</td></tr>
+        <tr><td>3</td><td>Lamb merguez</td><td class="r">8</td><td class="r">500 g</td><td>Your house merguez spice</td></tr>
+        <tr><td>4</td><td>Beef kefta skewers</td><td class="r">4</td><td class="r">400 g</td><td>Onion, parsley, cumin, paprika</td></tr>
+        <tr><td>5</td><td>Lamb chops</td><td class="r">4</td><td class="r">420 g</td><td>Garlic, rosemary or harissa</td></tr>
+      </tbody>
+      <tfoot><tr><td></td><td>Total</td><td class="r">24</td><td class="r">2,280 g</td><td></td></tr></tfoot>
+    </table></div>
+    <p class="note">Weights are a starting point. Count about 450–500 g of meat per adult for a BBQ.</p>
+  </section>
+
+  <section>
+    <h2>Packing order</h2>
+    <ol class="steps">
+      <li>Put an <b>absorbent pad</b> in the bottom of the tray so marinade and juices don't pool.</li>
+      <li>Lay the <b>beef skewers</b> (1) in the top left, all pointing the same way, sticks toward the outside edge.</li>
+      <li>Lay the <b>lamb skewers</b> (2) under them, same direction. Keeping beef and lamb in separate groups makes them easy to tell apart.</li>
+      <li>Run a line of <b>fresh parsley</b> down the middle as a divider.</li>
+      <li>On the right side, place the <b>merguez</b> (3) side by side across the top.</li>
+      <li>Place the <b>kefta skewers</b> (4) in the middle row.</li>
+      <li>Fan the <b>lamb chops</b> (5) in the bottom row, bones pointing up, so each one shows.</li>
+      <li>Add <b>2 lemon wedges</b> in the corner, then seal with film or a clear lid.</li>
+      <li>Stick the <b>label</b> on the lid and tape the spice sachet and cooking card on top.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Three sizes</h2>
+    <div class="sizes">
+      <div class="size"><h3>Duo</h3><div class="w">1.1 kg</div><p>2 people. 2 beef, 2 lamb, 2 kefta skewers, 4 merguez, 2 chops.</p></div>
+      <div class="size star"><h3>Family</h3><div class="w">2.3 kg</div><p>4–5 people. The box shown above.</p></div>
+      <div class="size"><h3>Party</h3><div class="w">4.6 kg</div><p>8–10 people. Double the family box, packed in two trays or one large 60 × 40 cm tray.</p></div>
+    </div>
+    <p class="note">Send me your cost per kg and I'll fill in a price for each size.</p>
+  </section>
+
+  <section class="two">
+    <div>
+      <h2>Extras on top</h2>
+      <ul class="plain">
+        <li>Small sachet of BBQ spice or harissa</li>
+        <li>Cooking card: about 10–12 min for skewers, 8–10 min for merguez and kefta, 3–4 min per side for chops</li>
+        <li>Optional paid add-ons: flatbread, grilled vegetables, a sauce pot</li>
+      </ul>
+    </div>
+    <div>
+      <h2>The label</h2>
+      <div class="label">
+        <strong>Family BBQ Box</strong>
+        <span>Beef &amp; lamb · 4–5 people</span>
+        <div class="row"><span>Net weight</span><span>2.28 kg</span></div>
+        <div class="row"><span>Prepared on</span><span>__ / __ / ____</span></div>
+        <div class="row"><span>Use by</span><span>__ / __ / ____</span></div>
+        <div class="row"><span>Keep at</span><span>0–4 °C</span></div>
+        <div class="row"><span>Price</span><span>________</span></div>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">Minced and marinated meat keeps for less time than whole cuts, usually about 2 days in the fridge. Check your local rules for prepared meat to set the exact use-by date and what must appear on the label.</p>
+</div>
+
+<script>
+(function(){
+  const NS="http://www.w3.org/2000/svg", svg=document.getElementById("box");
+  const el=(t,a,p)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);(p||svg).appendChild(e);return e};
+  // Tray
+  el("rect",{x:6,y:6,width:788,height:548,rx:22,fill:"#3b3330"});
+  el("rect",{x:20,y:20,width:760,height:520,rx:14,fill:"#1f1b1a"});
+  // Skewers (left half)
+  const veg=["#4f8a3a","#e9dcc8","#e2b13c"];
+  function skewer(y,meat,fat){
+    el("line",{x1:40,y1:y,x2:350,y2:y,stroke:"#d8b98a","stroke-width":4,"stroke-linecap":"round"});
+    el("polygon",{points:`40,${y-3} 30,${y} 40,${y+3}`,fill:"#d8b98a"});
+    let x=62;
+    for(let i=0;i<8;i++){
+      const isMeat=i%2===0||i===7;
+      if(isMeat){el("rect",{x,y:y-17,width:30,height:34,rx:7,fill:meat});
+        if(fat)el("path",{d:`M${x+6} ${y-8} q10 6 18 0`,stroke:fat,"stroke-width":3,fill:"none","stroke-linecap":"round"});}
+      else el("rect",{x:x+4,y:y-15,width:22,height:30,rx:5,fill:veg[(i>>1)%3]});
+      x+=34;
+    }
+  }
+  for(let i=0;i<4;i++)skewer(75+i*56,"#8e2b25",null);
+  for(let i=0;i<4;i++)skewer(299+i*56,"#b5544a","#ecd9c4");
+  // Parsley divider
+  for(let y=48;y<=512;y+=11){const dx=(y*7)%9-4;
+    el("circle",{cx:398+dx,cy:y,r:8,fill:y%22?"#3f7a2c":"#5a9a3e"});}
+  // Merguez
+  [70,96,122,148,174].forEach((y,i)=>{
+    el("path",{d:`M440 ${y} Q580 ${y-(i%2?10:-10)} 712 ${y}`,stroke:"#9c3a2a","stroke-width":17,fill:"none","stroke-linecap":"round"});
+    el("path",{d:`M450 ${y-3} Q580 ${y-3-(i%2?10:-10)} 700 ${y-3}`,stroke:"#b9523e","stroke-width":4,fill:"none","stroke-linecap":"round",opacity:.7});
+  });
+  // Kefta skewers
+  [222,256,290,324].forEach(y=>{
+    el("line",{x1:428,y1:y,x2:722,y2:y,stroke:"#d8b98a","stroke-width":4,"stroke-linecap":"round"});
+    el("rect",{x:462,y:y-13,width:220,height:26,rx:13,fill:"#7a3b2a"});
+    for(let x=478;x<670;x+=26)el("circle",{cx:x+(y%13),cy:y+((x/26)%2?-5:4),r:2.2,fill:"#5f9b3f"});
+  });
+  // Lamb chops
+  [[470,470],[535,462],[600,470],[665,462]].forEach(([cx,cy],i)=>{
+    const g=el("g",{transform:`rotate(${-75+i*10} ${cx} ${cy})`});
+    el("rect",{x:cx+30,y:cy-6,width:52,height:12,rx:6,fill:"#f1e7d6"},g);
+    el("ellipse",{cx,cy,rx:40,ry:30,fill:"#a8443a",stroke:"#ecd9c4","stroke-width":6},g);
+    el("ellipse",{cx:cx-6,cy:cy+2,rx:18,ry:12,fill:"#c25a4d"},g);
+  });
+  // Lemon wedges
+  [[722,498,-20],[748,474,25]].forEach(([x,y,r])=>{
+    el("path",{d:`M${x-16} ${y} A16 16 0 0 0 ${x+16} ${y} Z`,fill:"#f3d43b",stroke:"#e6b92b","stroke-width":3,transform:`rotate(${r} ${x} ${y})`});
+  });
+  // Callouts
+  [[372,159,1],[372,383,2],[742,122,3],[748,273,4],[742,420,5]].forEach(([x,y,n])=>{
+    el("circle",{cx:x,cy:y,r:14,fill:"#ffffff",stroke:"#1f1b1a","stroke-width":2});
+    const t=el("text",{x,y:y+5,"text-anchor":"middle","font-family":"Oswald, Arial, sans-serif","font-size":15,"font-weight":600,fill:"#1f1b1a"});
+    t.textContent=n;
+  });
+})();
+</script>
