@@ -1,0 +1,180 @@
+<title>Meatus Logo</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: big primary lockup panel, then a grid of versions, the story behind the mark, colors, and real uses */
+:root{
+  --bg:#f5f2ef; --surface:#ffffff; --fg:#221d1b; --muted:#6d625e; --line:#e2dad6; --accent:#8e2b25;
+  --ox:#7c1f1a; --char:#1e1a19; --bone:#efe6d8; --blood:#b3332a;
+  --slab:"Alfa Slab One",Rockwell,"Roboto Slab",Georgia,serif;
+  --display:"Oswald","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#161211; --surface:#201a19; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f; --accent:#e0776c; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#161211; --surface:#201a19; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f; --accent:#e0776c; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 64px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:44px}
+h1,h2{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,5vw,2.8rem);line-height:1.05}
+h2{font-size:1.35rem;margin-bottom:14px}
+.eyebrow{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600}
+.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
+.panel{border-radius:14px;display:grid;place-items:center;padding:40px 24px}
+.hero{background:var(--bone);padding:56px 24px}
+.hero svg{width:min(640px,100%);height:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.card{display:flex;flex-direction:column;gap:8px}
+.card .panel{aspect-ratio:1/1;max-width:100%;padding:24px}
+.card .panel svg{width:100%;height:100%}
+.card span{font-size:.92rem;color:var(--muted)}
+.story{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:24px 40px;align-items:center}
+.story > *{min-width:0}
+.story svg{width:100%;max-width:420px;height:auto;justify-self:center}
+.story ul{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:10px}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}
+.sw{border-radius:10px;border:1px solid var(--line);overflow:hidden;background:var(--surface)}
+.sw div{height:72px}
+.sw p{margin:0;padding:8px 12px;font-size:.88rem;font-variant-numeric:tabular-nums}
+.sw b{display:block;font-family:var(--display);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.uses{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.uses .panel{padding:28px}
+.uses svg{width:100%;height:auto}
+.note{color:var(--muted);font-size:.9rem;max-width:65ch;margin:0}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- The mark: an M whose left peak curls into a ram horn (lamb) and right peak rises into a bull horn (beef) -->
+    <symbol id="mark" viewBox="0 0 230 200">
+      <path d="M64 176 V86 L119 140 L174 86 V176" fill="none" stroke="currentColor" stroke-width="27" stroke-linejoin="miter" stroke-miterlimit="10"/>
+      <path d="M64 92 C64 44 14 34 12 74 C10 106 50 112 52 84 C53 66 32 64 30 78" fill="none" stroke-width="15" stroke-linecap="round" style="stroke:var(--horn, currentColor)"/>
+      <path d="M160.5 92 C160 58 186 44 220 8 C210 48 192 64 187.5 96 Z" style="fill:var(--horn, currentColor)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Logo · Butchery · Beef &amp; lamb</div>
+    <h1>Meatus</h1>
+    <p class="lede"><b>Meat</b> is the beef and lamb. <b>Us</b> is the family behind the counter. The mark is a bold M: one peak curls into a ram's horn for lamb, and the other rises into a bull's horn for beef.</p>
+  </header>
+
+  <!-- Primary horizontal lockup -->
+  <div class="panel hero">
+    <svg viewBox="0 0 640 220" role="img" aria-label="Meatus logo: horned M mark next to the word MEATUS, with the tagline Beef and Lamb Butchery">
+      <use href="#mark" x="0" y="10" width="230" height="200" style="color:var(--char);--horn:var(--ox)"/>
+      <text x="246" y="138" font-size="96" textLength="380" lengthAdjust="spacingAndGlyphs" style="font-family:var(--slab);fill:var(--char)">MEAT<tspan style="fill:var(--ox)">US</tspan></text>
+      <line x1="250" y1="166" x2="626" y2="166" stroke-width="3" style="stroke:var(--char)"/>
+      <text x="250" y="198" font-size="24" font-weight="500" letter-spacing="4" textLength="376" lengthAdjust="spacingAndGlyphs" style="font-family:var(--display);fill:var(--char)">BEEF &amp; LAMB · BUTCHERY</text>
+    </svg>
+  </div>
+
+  <section>
+    <h2>Versions</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="panel" style="background:var(--ox)">
+          <svg viewBox="0 0 240 240" role="img" aria-label="Round stamp version on red">
+            <defs><path id="ring" d="M120 120 m-92 0 a92 92 0 1 1 184 0 a92 92 0 1 1 -184 0"/></defs>
+            <circle cx="120" cy="120" r="112" fill="none" stroke-width="4" style="stroke:var(--bone)"/>
+            <circle cx="120" cy="120" r="76" fill="none" stroke-width="2" style="stroke:var(--bone)"/>
+            <text font-size="17" font-weight="600" letter-spacing="4.2" style="font-family:var(--display);fill:var(--bone)"><textPath href="#ring" startOffset="0" textLength="570" lengthAdjust="spacing">MEATUS ★ BEEF &amp; LAMB ★ BUTCHERY ★ MEAT FOR US ★</textPath></text>
+            <use href="#mark" x="62" y="66" width="116" height="101" style="color:var(--bone)"/>
+          </svg>
+        </div>
+        <span>Round stamp, for stickers, bags and the shop window</span>
+      </div>
+      <div class="card">
+        <div class="panel" style="background:var(--char)">
+          <svg viewBox="0 0 240 240" role="img" aria-label="Stacked version on black">
+            <use href="#mark" x="58" y="26" width="124" height="108" style="color:var(--bone);--horn:var(--blood)"/>
+            <text x="120" y="184" text-anchor="middle" font-size="44" textLength="176" lengthAdjust="spacingAndGlyphs" style="font-family:var(--slab);fill:var(--bone)">MEAT<tspan style="fill:var(--blood)">US</tspan></text>
+            <text x="120" y="212" text-anchor="middle" font-size="13" font-weight="500" letter-spacing="4" style="font-family:var(--display);fill:var(--bone)">BEEF &amp; LAMB</text>
+          </svg>
+        </div>
+        <span>Stacked, for signs, the BBQ box lid and menus</span>
+      </div>
+      <div class="card">
+        <div class="panel" style="background:var(--bone)">
+          <svg viewBox="0 0 240 240" role="img" aria-label="App icon version">
+            <rect x="20" y="20" width="200" height="200" rx="46" style="fill:var(--ox)"/>
+            <use href="#mark" x="46" y="56" width="148" height="129" style="color:var(--bone)"/>
+          </svg>
+        </div>
+        <span>Icon only, for Instagram, WhatsApp and the website</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="story">
+    <svg viewBox="0 0 420 260" role="img" aria-label="The mark explained: the ram horn means lamb, the bull horn means beef, the M stands for Meatus">
+      <use href="#mark" x="95" y="30" width="230" height="200" style="color:var(--fg);--horn:var(--accent)"/>
+      <g font-size="15" font-weight="500" letter-spacing="1.5" style="font-family:var(--display);fill:var(--muted)">
+        <line x1="104" y1="98" x2="58" y2="70" stroke-width="1.5" style="stroke:var(--muted)"/>
+        <text x="4" y="62">RAM = LAMB</text>
+        <line x1="296" y1="58" x2="316" y2="44" stroke-width="1.5" style="stroke:var(--muted)"/>
+        <text x="300" y="34">BULL = BEEF</text>
+        <line x1="214" y1="206" x2="250" y2="240" stroke-width="1.5" style="stroke:var(--muted)"/>
+        <text x="238" y="256">M = MEATUS</text>
+      </g>
+    </svg>
+    <div>
+      <h2>The idea</h2>
+      <ul>
+        <li><b>One letter, both animals.</b> The two horns show what you sell, beef and lamb, without needing a picture of a cow or a sheep.</li>
+        <li><b>"US" in red.</b> It splits the name into <i>meat</i> and <i>us</i> and points to the family and the customers.</li>
+        <li><b>Slab letters.</b> Heavy, square-footed type, like old butcher shop signs and cleaver stamps. It reads as strong and traditional.</li>
+        <li><b>Three colors only.</b> Easy and cheap to print on stickers, bags, trays and aprons.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2>Colors</h2>
+    <div class="swatches">
+      <div class="sw"><div style="background:var(--ox)"></div><p><b>Oxblood</b>#7C1F1A</p></div>
+      <div class="sw"><div style="background:var(--char)"></div><p><b>Charcoal</b>#1E1A19</p></div>
+      <div class="sw"><div style="background:var(--bone)"></div><p><b>Bone</b>#EFE6D8</p></div>
+      <div class="sw"><div style="background:var(--blood)"></div><p><b>Bright red</b>#B3332A (on black only)</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>On your products</h2>
+    <div class="uses">
+      <div class="panel" style="background:#d9d1c9">
+        <svg viewBox="0 0 400 260" role="img" aria-label="Meatus label on the BBQ box">
+          <rect x="10" y="10" width="380" height="240" rx="8" fill="#fbf8f2"/>
+          <rect x="10" y="10" width="380" height="64" rx="8" style="fill:var(--ox)"/><rect x="10" y="50" width="380" height="24" style="fill:var(--ox)"/>
+          <use href="#mark" x="22" y="18" width="56" height="49" style="color:var(--bone)"/>
+          <text x="84" y="54" font-size="30" textLength="128" lengthAdjust="spacingAndGlyphs" style="font-family:var(--slab);fill:var(--bone)">MEATUS</text>
+          <text x="376" y="50" text-anchor="end" font-size="16" font-weight="600" letter-spacing="2" style="font-family:var(--display);fill:var(--bone)">BBQ BOX · DUO</text>
+          <g font-size="15" fill="#6d625e" style="font-family:var(--body)">
+            <text x="30" y="108">Net weight</text><text x="30" y="140">Use by</text><text x="30" y="172">Keep at</text><text x="30" y="204">Price</text>
+          </g>
+          <g font-size="17" font-weight="600" fill="#221d1b" text-anchor="end" style="font-family:var(--display)">
+            <text x="370" y="108">1.14 kg</text><text x="370" y="140">__ / __ / ____</text><text x="370" y="172">0 – 4 °C</text><text x="370" y="204">______</text>
+          </g>
+          <g stroke="#e3d8c6" stroke-width="1.5"><line x1="30" y1="118" x2="370" y2="118"/><line x1="30" y1="150" x2="370" y2="150"/><line x1="30" y1="182" x2="370" y2="182"/></g>
+          <text x="30" y="234" font-size="12" fill="#8a7f7a" style="font-family:var(--body)">Beef &amp; lamb · ready to cook · keep refrigerated</text>
+        </svg>
+      </div>
+      <div class="panel" style="background:#2b2524">
+        <svg viewBox="0 0 400 260" role="img" aria-label="Meatus shop sign">
+          <rect x="16" y="40" width="368" height="180" rx="6" stroke="#5a4d49" stroke-width="3" style="fill:var(--char)"/>
+          <rect x="30" y="54" width="340" height="152" rx="3" fill="none" stroke-width="1.5" opacity=".5" style="stroke:var(--bone)"/>
+          <use href="#mark" x="44" y="78" width="110" height="96" style="color:var(--bone);--horn:var(--blood)"/>
+          <text x="164" y="146" font-size="50" textLength="200" lengthAdjust="spacingAndGlyphs" style="font-family:var(--slab);fill:var(--bone)">MEAT<tspan style="fill:var(--blood)">US</tspan></text>
+          <text x="166" y="176" font-size="14" font-weight="500" letter-spacing="2" textLength="196" lengthAdjust="spacingAndGlyphs" style="font-family:var(--display);fill:var(--bone)">BEEF &amp; LAMB · BUTCHERY</text>
+        </svg>
+      </div>
+    </div>
+  </section>
+
+  <p class="note">A heads-up on the name: in English, "meatus" is also a medical word for a body opening. Most customers won't know it, and as one word next to the horn logo it reads clearly as meat + us. If you want to avoid it, "Meat &amp; Us" or "MeatUs" with the capital U keeps the same idea.</p>
+</div>
