@@ -1,0 +1,259 @@
+<title>Duo BBQ Box 3D</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600&display=swap">
+<style>
+/* Layout: short header, large 3D stage with view buttons, then contents list and label notes */
+:root{
+  --bg:#f6f3f1; --surface:#ffffff; --fg:#231c1a; --muted:#6d625e; --line:#e2dad6;
+  --accent:#8e2b25; --accent-soft:#f3e3e1;
+  --display:"Oswald","Arial Narrow",Arial,sans-serif;
+  --body:"Source Sans 3",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#171312; --surface:#211b1a; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f;
+  --accent:#e0776c; --accent-soft:#3a2321; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#171312; --surface:#211b1a; --fg:#f1ebe8; --muted:#a99c97; --line:#3a312f;
+  --accent:#e0776c; --accent-soft:#3a2321; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55}
+.wrap{max-width:1040px;margin:0 auto;padding-block:32px 56px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:28px}
+h1,h2{font-family:var(--display);font-weight:600;text-transform:uppercase;letter-spacing:.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2rem,5vw,3rem);line-height:1.05}
+h2{font-size:1.35rem;margin-bottom:12px}
+.eyebrow{font-size:.8rem;text-transform:uppercase;letter-spacing:.12em;color:var(--accent);font-weight:600}
+.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
+.stage{position:relative;height:clamp(360px,68vh,640px);border-radius:12px;overflow:hidden;background:#d8d0c8}
+.stage canvas{display:block;width:100%;height:100%;touch-action:none}
+.hint{position:absolute;left:12px;bottom:10px;font-size:.8rem;color:#3d3431;background:rgba(255,255,255,.75);padding:3px 10px;border-radius:999px;pointer-events:none}
+.fail{position:absolute;inset:0;display:grid;place-items:center;padding:24px;text-align:center;color:#3d3431}
+.bar{display:flex;flex-wrap:wrap;gap:8px}
+button{font:600 .92rem var(--body);color:var(--fg);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 16px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;align-items:start}
+.two > *{min-width:0}
+ul.plain{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px}
+.note{color:var(--muted);font-size:.9rem;max-width:65ch;margin:0}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Ready to cook · Beef &amp; lamb · 2 people</div>
+    <h1>Duo BBQ Box</h1>
+    <p class="lede">A 3D mock-up of the 1.1 kg box as a customer would see it in your fridge: a black tray sealed with clear film, the label on top, and a spice sachet. Drag to turn it, and scroll or pinch to zoom.</p>
+  </header>
+
+  <div class="stage" id="stage">
+    <span class="hint" id="hint">Drag to rotate · scroll to zoom</span>
+  </div>
+  <div class="bar" role="group" aria-label="View controls">
+    <button type="button" id="vAngle" aria-pressed="true">Shop view</button>
+    <button type="button" id="vTop" aria-pressed="false">From above</button>
+    <button type="button" id="vLabel" aria-pressed="false">Label close-up</button>
+    <button type="button" id="tFilm" aria-pressed="true">Film &amp; label on</button>
+    <button type="button" id="tSpin" aria-pressed="false">Spin</button>
+  </div>
+
+  <section class="two">
+    <div>
+      <h2>Inside the tray</h2>
+      <ul class="plain">
+        <li><b>Left side:</b> 2 beef skewers (cubes, onion, pepper) and 2 lamb skewers</li>
+        <li><b>Middle:</b> a line of fresh parsley and 2 lemon wedges</li>
+        <li><b>Right side:</b> 4 merguez, 2 lamb chops in front of them, and 2 kefta skewers along the edge</li>
+        <li><b>Total:</b> about 1.14 kg in a 36 × 26 cm black tray with an absorbent pad</li>
+      </ul>
+    </div>
+    <div>
+      <h2>On the lid</h2>
+      <ul class="plain">
+        <li><b>Label</b> at the front right: name, weight, date made, use-by date, storage temperature, price, contents</li>
+        <li><b>Spice sachet</b> taped at the front left</li>
+        <li>Clear film so customers can see every piece</li>
+      </ul>
+    </div>
+  </section>
+  <p class="note">This is a 3D drawing, not a photo. Real colors and sizes will vary with your meat and packaging.</p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function(){
+  const stage=document.getElementById('stage');
+  if(!window.THREE){stage.insertAdjacentHTML('beforeend','<div class="fail">The 3D view could not load. Check your connection and reload the page.</div>');return;}
+  let renderer;
+  try{renderer=new THREE.WebGLRenderer({antialias:true});}catch(e){
+    stage.insertAdjacentHTML('beforeend','<div class="fail">This device cannot show 3D graphics. Try another browser or device.</div>');return;}
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+  renderer.outputEncoding=THREE.sRGBEncoding;
+  renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=.85;
+  renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+  stage.prepend(renderer.domElement);
+
+  const scene=new THREE.Scene();
+  scene.background=new THREE.Color(0xd8d0c8).convertSRGBToLinear();
+  const camera=new THREE.PerspectiveCamera(35,1,0.1,500);
+  const controls=new THREE.OrbitControls(camera,renderer.domElement);
+  controls.enableDamping=true;controls.minDistance=18;controls.maxDistance=120;controls.maxPolarAngle=Math.PI/2.1;
+
+  let seed=11;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  const col=c=>new THREE.Color(c).convertSRGBToLinear();
+  const mat=(c,r=.6,m=0)=>new THREE.MeshStandardMaterial({color:col(c),roughness:r,metalness:m});
+  function add(geo,m,x,y,z,parent){const o=new THREE.Mesh(geo,m);o.position.set(x,y,z);o.castShadow=true;o.receiveShadow=true;(parent||scene).add(o);return o;}
+
+  // Butcher block counter
+  const wc=document.createElement('canvas');wc.width=wc.height=1024;const wx=wc.getContext('2d');
+  for(let i=0;i<8;i++){const h=28+i*7%17;wx.fillStyle=`hsl(${28+i%3*3},${38+i%2*6}%,${52+(i*13)%12}%)`;wx.fillRect(0,i*128,1024,128);
+    for(let k=0;k<70;k++){wx.strokeStyle=`rgba(80,45,20,${.05+rnd()*.1})`;wx.lineWidth=1+rnd()*2;const y=i*128+rnd()*128;
+      wx.beginPath();wx.moveTo(0,y);wx.bezierCurveTo(300,y+rnd()*8-4,700,y+rnd()*8-4,1024,y+rnd()*6-3);wx.stroke();}
+    wx.fillStyle='rgba(60,35,15,.35)';wx.fillRect(0,i*128,1024,2);}
+  const wood=new THREE.CanvasTexture(wc);wood.encoding=THREE.sRGBEncoding;wood.wrapS=wood.wrapT=THREE.RepeatWrapping;wood.repeat.set(2,1.5);
+  wood.anisotropy=renderer.capabilities.getMaxAnisotropy();
+  const counter=new THREE.Mesh(new THREE.PlaneGeometry(160,110),new THREE.MeshStandardMaterial({map:wood,roughness:.8}));
+  counter.rotation.x=-Math.PI/2;counter.receiveShadow=true;scene.add(counter);
+
+  // Tray (36 x 26 cm inside, 4 cm deep)
+  const tm=mat(0x1b1918,.32);
+  add(new THREE.BoxGeometry(36.8,.4,26.8),tm,0,.2,0);
+  add(new THREE.BoxGeometry(36.8,4,.4),tm,0,2,13.2);add(new THREE.BoxGeometry(36.8,4,.4),tm,0,2,-13.2);
+  add(new THREE.BoxGeometry(.4,4,26.8),tm,18.2,2,0);add(new THREE.BoxGeometry(.4,4,26.8),tm,-18.2,2,0);
+  add(new THREE.BoxGeometry(38.6,.25,1.2),tm,0,4,13.8);add(new THREE.BoxGeometry(38.6,.25,1.2),tm,0,4,-13.8);
+  add(new THREE.BoxGeometry(1.2,.25,28.4),tm,18.8,4,0);add(new THREE.BoxGeometry(1.2,.25,28.4),tm,-18.8,4,0);
+  add(new THREE.BoxGeometry(33,.15,23),mat(0xf3f0ea,.95),0,.48,0);
+  const B=.56; // surface of pad
+
+  // Skewers
+  const stickM=mat(0xd9bb8c,.8),onionM=mat(0xebe0cc,.55),greenM=mat(0x4c8a35,.4),yellowM=mat(0xe0ae2e,.4),fatM=mat(0xeadbc7,.6);
+  const beefM=mat(0x7a231d,.55),lambM=mat(0x8f3b31,.55);
+  function skewer(x,meat,lamb,y0=1.76){
+    const s=add(new THREE.CylinderGeometry(.2,.2,24,8),stickM,x,y0,.5);s.rotation.x=Math.PI/2;
+    const t=add(new THREE.ConeGeometry(.2,1,8),stickM,x,y0,-12);t.rotation.x=-Math.PI/2;
+    for(let i=0;i<7;i++){const z=-9+i*3;
+      if(i%2===0){const m=add(new THREE.BoxGeometry(2.6,2.4,2.6),meat,x+(rnd()-.5)*.3,y0,z);m.rotation.set((rnd()-.5)*.2,(rnd()-.5)*.6,(rnd()-.5)*.2);
+        if(lamb){const f=add(new THREE.BoxGeometry(2.66,.35,1.1),fatM,0,.9,.4,m);}}
+      else{const vm=lamb?onionM:(i===3?greenM:(i===5?yellowM:onionM));
+        const v=add(new THREE.BoxGeometry(2.4,2.1,.7),vm,x,y0-.1,z);v.rotation.set(0,(rnd()-.5)*.3,(rnd()-.5)*.4);}
+    }
+  }
+  skewer(-15,beefM,false);skewer(-11.6,beefM,false);skewer(-8.2,lambM,true);skewer(-4.8,lambM,true);
+
+  // Parsley divider and lemon wedges
+  const pms=[mat(0x3c7428,.7),mat(0x52933a,.7),mat(0x2f5f20,.7)];
+  for(let z=-12;z<=7.5;z+=.55)for(let k=0;k<3;k++){
+    const p=add(new THREE.IcosahedronGeometry(.45+rnd()*.25,0),pms[k],-2+(rnd()-.5)*1.4,B+.4+rnd()*.5,z+(rnd()-.5)*.4);p.rotation.set(rnd()*3,rnd()*3,0);}
+  const lemM=mat(0xf2cf2e,.45),lemIn=mat(0xf8e9a0,.6);
+  [[-1.2,10,.4],[-2.6,11.6,-.6]].forEach(([x,z,r])=>{
+    const g=new THREE.Group();g.position.set(x,B+.02,z);g.rotation.y=r;scene.add(g);
+    const w=add(new THREE.SphereGeometry(1.5,20,12,0,Math.PI,0,Math.PI/2),lemM,0,0,0,g);w.rotation.x=-Math.PI/2;
+    const f=add(new THREE.CircleGeometry(1.45,20,0,Math.PI),lemIn,0,.01,0,g);f.rotation.x=-Math.PI/2;});
+
+  // Merguez
+  const merM=mat(0x74261b,.4);
+  [[2,1],[4.5,-1],[7,1],[9.5,-1]].forEach(([x,d])=>{
+    const pts=[];for(let i=0;i<=6;i++)pts.push(new THREE.Vector3(x+Math.sin(i/6*Math.PI)*.5*d,B+1.05,-11+i*2));
+    const c=new THREE.CatmullRomCurve3(pts);add(new THREE.TubeGeometry(c,48,1.05,14,false),merM,0,0,0);
+    add(new THREE.SphereGeometry(1.05,14,10),merM,pts[0].x,pts[0].y,pts[0].z);add(new THREE.SphereGeometry(1.05,14,10),merM,pts[6].x,pts[6].y,pts[6].z);});
+
+  // Lamb chops
+  const boneM=mat(0xefe3cf,.5),chopM=mat(0x8a2f27,.5),eyeM=mat(0x9a3b31,.5);
+  function chop(x,z,a){
+    const g=new THREE.Group();g.position.set(x,B,z);g.rotation.y=a;scene.add(g);
+    const fs=new THREE.Shape();fs.absellipse(0,0,3.3,2.6,0,Math.PI*2,false,0);
+    const ms=new THREE.Shape();ms.absellipse(-.25,0,2.8,2.1,0,Math.PI*2,false,0);
+    const fat=add(new THREE.ExtrudeGeometry(fs,{depth:1.1,bevelEnabled:true,bevelThickness:.25,bevelSize:.25,bevelSegments:3,curveSegments:32}),fatM,0,.25,0,g);fat.rotation.x=-Math.PI/2;
+    const mt=add(new THREE.ExtrudeGeometry(ms,{depth:1.2,bevelEnabled:true,bevelThickness:.3,bevelSize:.2,bevelSegments:3,curveSegments:32}),chopM,0,.3,0,g);mt.rotation.x=-Math.PI/2;
+    const eye=add(new THREE.CircleGeometry(.9,24),eyeM,-.6,1.82,0,g);eye.rotation.x=-Math.PI/2;eye.scale.set(1.3,1,1);
+    const bone=add(new THREE.CylinderGeometry(.5,.55,4.2,12),boneM,4.9,.8,0,g);bone.rotation.z=Math.PI/2;
+    add(new THREE.SphereGeometry(.75,12,10),boneM,7,.8,0,g);
+  }
+  chop(3.6,6.4,-.12);chop(4,10.2,.08);
+
+  // Kefta skewers
+  const kefM=mat(0x7a3d2b,.75),herbM=mat(0x4f8f37,.6);
+  function kefta(x){
+    const s=add(new THREE.CylinderGeometry(.2,.2,23,8),stickM,x,1.7,.5);s.rotation.x=Math.PI/2;
+    const geo=new THREE.SphereGeometry(1,24,32);const p=geo.attributes.position;
+        const k=add(geo,kefM,x,1.71,-2);k.scale.set(1.3,1.15,7);
+    for(let i=0;i<26;i++){const z=-8+rnd()*12,ang=rnd()*Math.PI;
+      add(new THREE.SphereGeometry(.12,6,4),herbM,x+Math.cos(ang)*1.25*Math.sqrt(1-((z+2)/7)**2),1.71+Math.sin(ang)*1.12*Math.sqrt(1-((z+2)/7)**2),z);}
+  }
+  kefta(12.8);kefta(15.9);
+
+  // Film, label and spice sachet
+  const lid=new THREE.Group();scene.add(lid);
+  const film=new THREE.Mesh(new THREE.PlaneGeometry(38.4,28.2),new THREE.MeshStandardMaterial({color:0xffffff,transparent:true,opacity:.14,roughness:.05,metalness:.2,depthWrite:false}));
+  film.rotation.x=-Math.PI/2;film.position.y=4.14;lid.add(film);
+
+  const lc=document.createElement('canvas');lc.width=1040;lc.height=720;
+  const sc=document.createElement('canvas');sc.width=560;sc.height=360;
+  function drawLabels(){
+    const D='Oswald, "Arial Narrow", Arial, sans-serif',T='"Source Sans 3", Arial, sans-serif';
+    let c=lc.getContext('2d');
+    c.fillStyle='#fbf8f2';c.fillRect(0,0,1040,720);
+    c.fillStyle='#8e2b25';c.fillRect(0,0,1040,150);
+    c.fillStyle='#ffffff';c.font=`600 92px ${D}`;c.textBaseline='middle';c.fillText('BBQ BOX · DUO',44,80);
+        c.fillStyle='#231c1a';c.font=`400 40px ${T}`;c.fillText('Beef & lamb · 2 people · keep refrigerated',44,205);
+    const rows=[['Net weight','1.14 kg'],['Prepared on','__ / __ / ____'],['Use by','__ / __ / ____'],['Keep at','0 – 4 °C'],['Price','________']];
+    rows.forEach(([a,b],i)=>{const y=270+i*68;
+      c.strokeStyle='#e3d8c6';c.lineWidth=3;c.beginPath();c.moveTo(44,y);c.lineTo(996,y);c.stroke();
+      c.fillStyle='#6d625e';c.font=`400 40px ${T}`;c.fillText(a,44,y+36);
+      c.fillStyle='#231c1a';c.font=`600 44px ${D}`;c.textAlign='right';c.fillText(b,996,y+36);c.textAlign='left';});
+    c.fillStyle='#6d625e';c.font=`400 26px ${T}`;
+    c.fillText('2 beef skewers · 2 lamb skewers · 2 kefta skewers · 4 merguez · 2 lamb chops',44,690);
+    c=sc.getContext('2d');
+    c.fillStyle='#c79e68';c.fillRect(0,0,560,360);
+    for(let i=0;i<300;i++){c.fillStyle=`rgba(90,60,30,${rnd()*.12})`;c.fillRect(rnd()*560,rnd()*360,2,2);}
+    c.fillStyle='rgba(255,255,255,.35)';c.fillRect(0,0,560,40);
+    c.fillStyle='#2b211c';c.font=`600 92px ${D}`;c.textBaseline='middle';c.fillText('BBQ SPICE',36,150);
+    c.font=`400 34px ${T}`;c.fillText('Harissa · cumin · paprika',38,240);c.fillText('Sprinkle before grilling',38,295);
+    labelTex.needsUpdate=true;sachetTex.needsUpdate=true;
+  }
+  const labelTex=new THREE.CanvasTexture(lc),sachetTex=new THREE.CanvasTexture(sc);
+  [labelTex,sachetTex].forEach(t=>{t.encoding=THREE.sRGBEncoding;t.anisotropy=renderer.capabilities.getMaxAnisotropy();});
+  drawLabels();
+  if(document.fonts&&document.fonts.load)Promise.all([document.fonts.load('600 60px Oswald'),document.fonts.load('400 30px "Source Sans 3"'),document.fonts.load('600 30px "Source Sans 3"')]).then(drawLabels).catch(()=>{});
+  const label=new THREE.Mesh(new THREE.PlaneGeometry(13,9),new THREE.MeshStandardMaterial({map:labelTex,roughness:.7}));
+  label.rotation.set(-Math.PI/2,0,.02);label.position.set(10.2,4.17,6.9);label.castShadow=true;lid.add(label);
+  const sachet=new THREE.Mesh(new THREE.BoxGeometry(7,.25,4.5),[mat(0xc79e68,.9),mat(0xc79e68,.9),new THREE.MeshStandardMaterial({map:sachetTex,roughness:.85}),mat(0xc79e68,.9),mat(0xc79e68,.9),mat(0xc79e68,.9)]);
+  sachet.position.set(-11,4.3,8.6);sachet.rotation.y=.12;sachet.castShadow=true;lid.add(sachet);
+  sachetTex.center.set(.5,.5);sachetTex.rotation=0;
+
+  // Lights
+  scene.add(new THREE.HemisphereLight(0xfff4e8,0x5a4a40,.6));
+  const sun=new THREE.DirectionalLight(0xfff1e0,1.25);sun.position.set(22,48,26);sun.castShadow=true;
+  sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-32,right:32,top:32,bottom:-32,near:1,far:140});sun.shadow.bias=-.0006;sun.shadow.radius=4;
+  scene.add(sun);
+  const fill=new THREE.DirectionalLight(0xdfe8ff,.35);fill.position.set(-30,20,-12);scene.add(fill);
+
+  // Views
+  const views={vAngle:[[0,36,46],[0,1,1]],vTop:[[0,64,.01],[0,0,0]],vLabel:[[13,17,22],[10,4,6.5]]};
+  let anim=null;
+  function go(id,instant){
+    const [p,t]=views[id];document.querySelectorAll('#vAngle,#vTop,#vLabel').forEach(b=>b.setAttribute('aria-pressed',b.id===id));
+    const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(instant||reduce){camera.position.set(...p);controls.target.set(...t);controls.update();return;}
+    anim={p0:camera.position.clone(),t0:controls.target.clone(),p1:new THREE.Vector3(...p),t1:new THREE.Vector3(...t),s:performance.now()};
+  }
+  ['vAngle','vTop','vLabel'].forEach(id=>document.getElementById(id).addEventListener('click',()=>go(id)));
+  const filmBtn=document.getElementById('tFilm');
+  filmBtn.addEventListener('click',()=>{lid.visible=!lid.visible;filmBtn.setAttribute('aria-pressed',lid.visible);filmBtn.textContent=lid.visible?'Film & label on':'Film & label off';});
+  const spinBtn=document.getElementById('tSpin');
+  spinBtn.addEventListener('click',()=>{controls.autoRotate=!controls.autoRotate;controls.autoRotateSpeed=1.2;spinBtn.setAttribute('aria-pressed',controls.autoRotate);});
+  controls.addEventListener('start',()=>{anim=null;document.getElementById('hint').hidden=true;});
+  go('vAngle',true);
+
+  function size(){const w=stage.clientWidth,h=stage.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;
+    camera.fov=w<600?48:35;camera.updateProjectionMatrix();}
+  size();if(window.ResizeObserver)new ResizeObserver(size).observe(stage);else addEventListener('resize',size);
+
+  (function loop(now){
+    if(anim){const k=Math.min(1,(now-anim.s)/900),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      camera.position.lerpVectors(anim.p0,anim.p1,e);controls.target.lerpVectors(anim.t0,anim.t1,e);if(k>=1)anim=null;}
+    controls.update();renderer.render(scene,camera);requestAnimationFrame(loop);
+  })(performance.now());
+})();
+</script>
